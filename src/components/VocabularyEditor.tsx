@@ -60,6 +60,7 @@ export default function VocabularyEditor({ data, onChange }: Props) {
               key={index}
               className="flex items-center mb-2 space-x-2 border-b pb-2"
             >
+              <p>{index}</p>
               <input
                 value={item.word}
                 onChange={(e) => handleChange(index, 'word', e.target.value)}
@@ -83,8 +84,10 @@ export default function VocabularyEditor({ data, onChange }: Props) {
                 <option value="noun">Noun</option>
                 <option value="verb1">Verb1</option>
                 <option value="verb2">Verb2</option>
+                <option value="verb3">Verb3</option>
                 <option value="adjective">Adjective</option>
                 <option value="expression">Expression</option>
+                <option value="adverb">Adverb</option>
               </select>
               <button
                 type="button"
