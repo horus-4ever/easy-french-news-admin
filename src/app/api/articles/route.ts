@@ -6,7 +6,7 @@ import { dbConnect } from '@/lib/dbConnect';
 export async function GET() {
   try {
     await dbConnect();
-    const articles = await Article.find({}).select("_id title publishDate").sort({ publishDate: -1 });
+    const articles = await Article.find({}).select("_id title publishDate published").sort({ publishDate: -1 });
     return NextResponse.json(articles, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

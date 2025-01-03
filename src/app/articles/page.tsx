@@ -1,4 +1,3 @@
-// src/app/articles/page.tsx
 "use client";
 
 import Link from 'next/link';
@@ -27,6 +26,31 @@ export default function ArticlesListPage() {
     fetchArticles();
   }, []);
 
+  const togglePublish = async (id: string, currentPublished: boolean) => {
+    try {
+      const res = await fetch(`/api/articles/${id}/publish`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ published: !currentPublished }),
+      });
+      if (res.ok) {
+        const updatedArticle = await res.json();
+        setArticles((prev) =>
+          prev.map((article) =>
+            article._id === updatedArticle._id ? updatedArticle : article
+          )
+        );
+      } else {
+        throw new Error('Failed to update publish state');
+      }
+    } catch (err) {
+      console.error(err);
+      alert((err as Error).message);
+    }
+  };
+
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
 
@@ -49,6 +73,7 @@ export default function ArticlesListPage() {
               <th className="py-2 px-4 border-b">ID</th>
               <th className="py-2 px-4 border-b">Title</th>
               <th className="py-2 px-4 border-b">Publish Date</th>
+              <th className="py-2 px-4 border-b">Published</th>
               <th className="py-2 px-4 border-b">Actions</th>
             </tr>
           </thead>
@@ -62,6 +87,9 @@ export default function ArticlesListPage() {
                     ? new Date(article.publishDate).toLocaleDateString()
                     : ''}
                 </td>
+                <td className="py-2 px-4 border-b text-center">
+                  {article.published ? '✅' : '❌'}
+                </td>
                 <td className="py-2 px-4 border-b space-x-2">
                   <Link
                     href={`/articles/${article._id}/edit`}
@@ -69,6 +97,12 @@ export default function ArticlesListPage() {
                   >
                     Edit
                   </Link>
+                  <button
+                    className="px-2 py-1 bg-blue-500 text-white rounded"
+                    onClick={() => togglePublish(article._id, article.published)}
+                  >
+                    {article.published ? 'Unpublish' : 'Publish'}
+                  </button>
                   <button
                     className="px-2 py-1 bg-red-500 text-white rounded"
                     onClick={async () => {
