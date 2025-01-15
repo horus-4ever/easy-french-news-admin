@@ -1,11 +1,13 @@
+// src/components/ArticleForm.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import VocabularyEditor from './VocabularyEditor';
 import GrammarEditor from './GrammarEditor';
 import QuestionsEditor from './QuestionsEditor';
 import TagsInput from './TagsInput';
 import HtmlEditor from './HtmlEditor';
+import { saveDraft, loadDraft } from '@/lib/localDrafts';
 
 export interface ArticleVersionData {
   content: string;
@@ -30,9 +32,16 @@ export interface ArticleFormData {
 interface Props {
   onSubmit: (data: ArticleFormData) => void;
   initialData?: ArticleFormData;
+  draftId?: string; // <--- We add this so we know how to store in localStorage
+  autosave?: boolean; // <--- Turn on or off autosave if you want
 }
 
-export default function ArticleForm({ onSubmit, initialData }: Props) {
+export default function ArticleForm({
+  onSubmit,
+  initialData,
+  draftId,
+  autosave = true,
+}: Props) {
   const [formData, setFormData] = useState<ArticleFormData>(
     initialData || {
       title: '',
@@ -57,6 +66,29 @@ export default function ArticleForm({ onSubmit, initialData }: Props) {
       },
     }
   );
+
+  const [mounted, setMounted] = useState<boolean>(false);
+
+  // ---- AUTOLOAD draft if there's a draftId and no initialData (or some logic) ----
+  useEffect(() => {
+    if (draftId && !initialData) {
+      // Attempt to load from local storage
+      const localDraft = loadDraft(draftId);
+      if (localDraft) {
+        setFormData(localDraft);
+      }
+    }
+  }, [draftId, initialData]);
+
+  // ---- AUTOSAVE on formData change (if autosave = true) ----
+  useEffect(() => {
+    if (mounted && autosave && draftId) {
+      // On every formData change, we save to localStorage
+      saveDraft(draftId, formData);
+    } else if(!mounted) {
+      setMounted(true);
+    }
+  }, [autosave, mounted, draftId, formData]);
 
   const handleChange = (field: keyof ArticleFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -84,8 +116,28 @@ export default function ArticleForm({ onSubmit, initialData }: Props) {
     onSubmit(finalData);
   };
 
+  // Manually save the draft if user wants to control. 
+  // (If you rely purely on autosave, you can omit the button)
+  const handleManualSave = () => {
+    if (!draftId) return;
+    saveDraft(draftId, formData);
+    alert('Draft saved locally!');
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 w-full">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold">Article Form</h2>
+        {/* Optional manual save button */}
+        <button
+          type="button"
+          onClick={handleManualSave}
+          className="px-3 py-1 bg-blue-500 text-white rounded"
+        >
+          Save Draft
+        </button>
+      </div>
+
       {/* TITLE */}
       <div>
         <label className="block font-semibold mb-1">Title</label>
@@ -211,8 +263,9 @@ export default function ArticleForm({ onSubmit, initialData }: Props) {
         type="submit"
         className="px-4 py-2 bg-green-500 text-white font-semibold rounded"
       >
-        Save
+        Save to Database
       </button>
     </form>
   );
 }
+

@@ -11,6 +11,9 @@ export default function EditArticlePage() {
   const router = useRouter();
   const params = useParams(); // { id: '....' }
 
+  // We will pass this as the draftId to the form:
+  const draftId = params.id;
+
   useEffect(() => {
     const fetchArticle = async () => {
       try {
@@ -41,6 +44,11 @@ export default function EditArticlePage() {
       if (!res.ok) {
         throw new Error('Failed to update article');
       }
+
+      // Optionally remove the local draft now that it's saved:
+      // import { removeDraft } from '@/lib/localDrafts';
+      // removeDraft(draftId);
+
       router.push('/articles');
     } catch (err) {
       console.error(err);
@@ -54,7 +62,11 @@ export default function EditArticlePage() {
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold mb-4">Edit Article</h1>
-      <ArticleForm onSubmit={handleSubmit} initialData={article} />
+      {/*
+        We pass the "article" as initialData, and also pass the "draftId",
+        so the form can handle autosaving, loading from localStorage, etc.
+      */}
+      <ArticleForm onSubmit={handleSubmit} initialData={article} draftId={draftId} />
     </main>
   );
 }

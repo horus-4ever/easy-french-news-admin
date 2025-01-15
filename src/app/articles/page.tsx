@@ -1,12 +1,19 @@
+// src/app/articles/page.tsx
 "use client";
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { listAllDrafts, removeDraft } from '@/lib/localDrafts';
 
 export default function ArticlesListPage() {
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // For local drafts
+  const [localDrafts, setLocalDrafts] = useState<{ key: string; data: any }[]>(
+    []
+  );
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -24,6 +31,10 @@ export default function ArticlesListPage() {
       }
     };
     fetchArticles();
+
+    // Also load local drafts
+    const drafts = listAllDrafts();
+    setLocalDrafts(drafts);
   }, []);
 
   const togglePublish = async (id: string, currentPublished: boolean) => {
@@ -67,7 +78,7 @@ export default function ArticlesListPage() {
       {articles.length === 0 ? (
         <div>No articles found.</div>
       ) : (
-        <table className="min-w-full bg-white border border-gray-200">
+        <table className="min-w-full bg-white border border-gray-200 mb-8">
           <thead>
             <tr className="bg-gray-50">
               <th className="py-2 px-4 border-b">ID</th>
@@ -131,6 +142,64 @@ export default function ArticlesListPage() {
           </tbody>
         </table>
       )}
+
+      {/** SECTION FOR LOCAL DRAFTS */}
+      <h2 className="text-xl font-bold mb-4">Local Drafts</h2>
+      {localDrafts.length === 0 ? (
+        <div>No local drafts.</div>
+      ) : (
+        <table className="min-w-full bg-white border border-gray-200">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="py-2 px-4 border-b">Draft ID</th>
+              <th className="py-2 px-4 border-b">Title (from draft)</th>
+              <th className="py-2 px-4 border-b">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {localDrafts.map(({ key, data }) => {
+              // If the key starts with "new-", it's a brand new article draft
+              const isNew = key.startsWith('new-');
+              // We'll read the title from data.title or "Untitled"
+              const title = data.title || 'Untitled Draft';
+              return (
+                <tr key={key}>
+                  <td className="py-2 px-4 border-b">{key}</td>
+                  <td className="py-2 px-4 border-b">{title}</td>
+                  <td className="py-2 px-4 border-b space-x-2">
+                    {isNew ? (
+                      <Link
+                        href={`/articles/new?draftId=${key}`}
+                        className="px-2 py-1 bg-green-500 text-white rounded"
+                      >
+                        Resume
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/articles/${key}/edit`}
+                        className="px-2 py-1 bg-green-500 text-white rounded"
+                      >
+                        Resume Edit
+                      </Link>
+                    )}
+                    <button
+                      className="px-2 py-1 bg-red-500 text-white rounded"
+                      onClick={() => {
+                        if (!confirm('Delete this local draft?')) return;
+                        removeDraft(key);
+                        setLocalDrafts((prev) => prev.filter((d) => d.key !== key));
+                      }}
+                    >
+                      Delete Draft
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
     </main>
   );
 }
+
