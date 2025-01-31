@@ -1,6 +1,6 @@
 // src/app/api/articles/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import Article from '@/models/Article';
+import { Article } from '@/models/Article';
 import { dbConnect } from '@/lib/dbConnect';
 
 type tParams = Promise<{ id: string }>;
