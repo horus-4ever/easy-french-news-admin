@@ -60,8 +60,6 @@ export interface IArticle extends Document {
   imageUrl: string;
   publishDate: Date;
   published: boolean;
-  createdAt: Date;
-  updatedAt: Date;
   labels: string[];
   easyVersion: IArticleVersion;
   mediumVersion: IArticleVersion;

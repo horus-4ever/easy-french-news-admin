@@ -10,7 +10,7 @@ import HtmlEditor from './HtmlEditor';
 export interface ArticleVersionData {
   content: string;
   audioUrl: string;
-  vocabulary: any[];
+  vocabulary: any;
   grammarPoints: any[];
   questions: any[];
 }
@@ -44,14 +44,22 @@ export default function ArticleForm({ onSubmit, initialData }: Props) {
       easyVersion: {
         content: '',
         audioUrl: '',
-        vocabulary: [],
+        vocabulary: {
+          words: [],
+          category: [],
+          translations: {}
+        },
         grammarPoints: [],
         questions: [],
       },
       mediumVersion: {
         content: '',
         audioUrl: '',
-        vocabulary: [],
+        vocabulary: {
+          words: [],
+          category: [],
+          translations: {}
+        },
         grammarPoints: [],
         questions: [],
       },

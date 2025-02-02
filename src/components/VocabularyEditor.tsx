@@ -139,6 +139,7 @@ export default function VocabularyEditor({ data, onChange }: Props) {
               key={rowIndex}
               className="border-b py-2 mb-2"
             >
+              <p className="bold">{rowIndex}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                 {/* Word input */}
                 <input
